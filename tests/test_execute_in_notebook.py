@@ -8,7 +8,13 @@ from nbclient import NotebookClient
 RUN_PROTOCOL = """
 import asyncio
 
+from loguru import logger
+
 import mechwolf as mw
+
+# in a notebook MechWolf logs to a widget, so keep a copy to show on failure
+log = []
+logger.add(log.append, level="TRACE")
 
 a = mw.Vessel(name="a", description="nothing")
 pump = mw.DummyPump(name="Dummy pump")
@@ -33,7 +39,7 @@ for _ in range(300):
     await asyncio.sleep(0.1)
 
 assert E.was_executed
-assert len(E.data["sensor"]) >= 5, E.data
+assert len(E.data["sensor"]) >= 5, "".join(str(line) for line in log[-30:])
 assert E.data["sensor"][0].data == "simulated read"
 assert pump.rate == mw._ureg.parse_expression(pump._base_state["rate"])
 """
