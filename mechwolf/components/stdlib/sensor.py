@@ -67,7 +67,10 @@ class Sensor(ActiveComponent):
             logger.trace("Entering context...")
             with self:
                 logger.trace("Context entered")
-                res = asyncio.run(self._read())
+                read = self._read()
+                if not asyncio.iscoroutine(read):
+                    raise ValueError(f"{self}._read() must be async.")
+                res = asyncio.run(read)
                 if not res:
                     warn(
                         "Sensor reads should probably return data. "

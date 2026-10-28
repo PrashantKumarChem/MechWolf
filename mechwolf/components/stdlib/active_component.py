@@ -107,7 +107,10 @@ class ActiveComponent(Component):
             self._update_from_params(self._base_state)
             logger.trace(f"Attempting to call _update() for {repr(self)}.")
             with self:
-                res = asyncio.run(self._update())
+                update = self._update()
+                if not asyncio.iscoroutine(update):
+                    raise ValueError(f"{repr(self)}._update() must be async.")
+                res = asyncio.run(update)
                 if res is not None:
                     raise ValueError(f"Received return value {res} from update.")
 
